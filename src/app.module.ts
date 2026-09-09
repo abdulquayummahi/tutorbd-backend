@@ -20,8 +20,8 @@ import { Application } from './entities/application.entity';
       host: process.env.DB_HOST || 'localhost',
       // Inside src/app.module.ts TypeOrmModule.forRoot({...})
       port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USER || 'user123',
-      password: process.env.DB_PASSWORD || 'pass123',
+      username: process.env.DB_USER || 'user1',
+      password: process.env.DB_PASSWORD || 'pass1',
       database: process.env.DB_NAME || 'TutorBD_Backend',
       entities: [User, Tuition, Application],
       synchronize: true, // Auto-creates database tables based on your Entities (turn off in actual production)
