@@ -1,7 +1,7 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { TuitionModule } from './tuition/tuition.module';
 import { AuthModule } from './auth/auth.module';
@@ -11,23 +11,25 @@ import { Application } from './entities/application.entity';
 
 @Module({
   imports: [
-    // 1. Loads environment variables (e.g., DB_PASSWORD)
     ConfigModule.forRoot({ isGlobal: true }),
 
-    // 2. Database Connection (PostgreSQL)
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      // Inside src/app.module.ts TypeOrmModule.forRoot({...})
-      port: parseInt(process.env.DB_PORT || '5432', 10),
-      username: process.env.DB_USER || 'user1',
-      password: process.env.DB_PASSWORD || 'pass1',
-      database: process.env.DB_NAME || 'TutorBD_Backend',
-      entities: [User, Tuition, Application],
-      synchronize: true, // Auto-creates database tables based on your Entities (turn off in actual production)
+    // THE FIX: Use forRootAsync and inject ConfigService
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST', 'localhost'),
+        port: configService.get<number>('DB_PORT', 5432),
+        username: configService.get<string>('DB_USER', 'postgressql'),
+        // Fetches your actual password from the .env file dynamically
+        password: configService.get<string>('DB_PASSWORD', 'Pass1234'),
+        database: configService.get<string>('DB_NAME', 'tutorbd'),
+        entities: [User, Tuition, Application],
+        synchronize: true,
+      }),
     }),
 
-    // 3. Bonus Feature: Mailer Setup
     MailerModule.forRoot({
       transport: {
         host: 'smtp.example.com',
@@ -35,7 +37,6 @@ import { Application } from './entities/application.entity';
       },
     }),
 
-    // 4. Feature Modules (Completing N-Tier Architecture)
     AuthModule,
     TuitionModule,
   ],
