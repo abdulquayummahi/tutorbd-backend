@@ -21,9 +21,9 @@ import { Application } from './entities/application.entity';
         type: 'postgres',
         host: configService.get<string>('DB_HOST', 'localhost'),
         port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USER', 'postgressql'),
+        username: configService.get<string>('DB_USER', 'postgresql'),
         // Fetches your actual password from the .env file dynamically
-        password: configService.get<string>('DB_PASSWORD', 'Pass1234'),
+        password: configService.get<string>('DB_PASSWORD', '123456'),
         database: configService.get<string>('DB_NAME', 'tutorbd'),
         entities: [User, Tuition, Application],
         synchronize: true,
