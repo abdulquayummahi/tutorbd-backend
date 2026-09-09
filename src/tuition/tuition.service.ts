@@ -29,9 +29,13 @@ export class TuitionService {
     return await this.tuitionRepo.save(tuition);
   }
 
-  // 2. Read: Fetch all tuitions (For the Tutor Dashboard)
+  // src/tuition/tuition.service.ts (Update these two methods)
+
+  // Fix for Line 34
   async findAll() {
-    return await this.tuitionRepo.find({ relations: ['student'] });
+    return await this.tuitionRepo.find({
+      relations: { student: true }, // Replaced array with object
+    });
   }
 
   // 3. Update (Partial): Update tuition details
@@ -75,7 +79,7 @@ export class TuitionService {
     return await this.appRepo.save(application);
   }
 
-  // 6. Relational Update & Bonus Mailer: Student accepts/rejects a tutor
+  // Fix for Line 86
   async updateApplicationStatus(
     appId: string,
     status: string,
@@ -83,9 +87,11 @@ export class TuitionService {
   ) {
     const application = await this.appRepo.findOne({
       where: { id: appId },
-      relations: ['tuition', 'tuition.student', 'tutor'],
+      relations: {
+        tuition: { student: true }, // Nested relation
+        tutor: true,
+      },
     });
-
     if (!application) throw new NotFoundException('Application not found');
 
     // Security check: Only the student who made the post can accept the tutor
