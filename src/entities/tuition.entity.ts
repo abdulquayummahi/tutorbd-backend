@@ -5,6 +5,7 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Application } from './application.entity';
@@ -17,10 +18,29 @@ export class Tuition {
   @Column()
   title: string;
 
+  // THE FIX: Updated columns to perfectly match the Next.js UI payload
   @Column()
+  gradeLevel: string;
+
+  @Column()
+  subjects: string;
+
+  @Column()
+  daysPerWeek: string;
+
+  @Column()
+  location: string;
+
+  @Column('decimal')
   salary: number;
 
-  // Many Tuitions belong to One Student
+  // Inside your Tuition entity class:
+  @Column({ type: 'varchar', default: 'pending' })
+  status: string; // 'pending', 'approved', 'rejected'
+
+  @CreateDateColumn()
+  createdAt: Date;
+
   @ManyToOne(() => User, (user) => user.tuitions, { onDelete: 'CASCADE' })
   student: User;
 

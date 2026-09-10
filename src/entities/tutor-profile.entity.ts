@@ -22,6 +22,10 @@ export class TutorProfile {
   @Column()
   preferredSubjects: string;
 
+  // Inside your TutorProfile entity class:
+  @Column({ type: 'varchar', default: 'pending' })
+  verificationStatus: string; // 'pending', 'verified', 'rejected'
+
   @OneToOne(() => User, (user) => user.tutorProfile, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;

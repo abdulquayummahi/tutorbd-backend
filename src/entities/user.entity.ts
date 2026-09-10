@@ -10,7 +10,10 @@ import { Tuition } from './tuition.entity';
 import { Application } from './application.entity';
 import { StudentProfile } from './student-profile.entity';
 import { TutorProfile } from './tutor-profile.entity';
-import { AdminProfile } from './admin-profile.entity'; // Import the new profile
+import { AdminProfile } from './admin-profile.entity';
+
+// THE FIX: Import the Report entity here!
+import { Report } from './report.entity';
 
 @Entity('users')
 export class User {
@@ -26,7 +29,6 @@ export class User {
   @Column({ type: 'varchar', default: 'student' })
   role: string;
 
-  // THE FIX: Added status to support Suspend/Restore functionality
   @Column({ type: 'varchar', default: 'Active' })
   status: string;
 
@@ -49,7 +51,6 @@ export class User {
   })
   tutorProfile: TutorProfile;
 
-  // THE FIX: Added Admin Profile
   @OneToOne(() => AdminProfile, (profile) => profile.user, {
     cascade: true,
     eager: true,
@@ -62,4 +63,8 @@ export class User {
 
   @OneToMany(() => Application, (application) => application.tutor)
   applications: Application[];
+
+  // This will now compile perfectly!
+  @OneToMany(() => Report, (report) => report.reporter)
+  reports: Report[];
 }

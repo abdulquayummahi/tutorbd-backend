@@ -3,7 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Patch,
   Delete,
   Body,
@@ -16,6 +15,8 @@ import { Request } from 'express';
 import { TuitionService } from './tuition.service';
 import { CreateTuitionDto } from './dto/create-tuition.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 
 interface RequestWithUser extends Request {
   user: { id: string; email: string; role: string };
@@ -25,32 +26,23 @@ interface RequestWithUser extends Request {
 export class TuitionController {
   constructor(private readonly tuitionService: TuitionService) {}
 
-  // Route 1 (GET): Public endpoint to fetch all tuitions
+  // PUBLIC ROUTE: Anyone can see tuitions
   @Get()
   getAllTuitions() {
     return this.tuitionService.findAll();
   }
 
-  // Route 2 (POST): Protected endpoint for students to create a tuition post
-  @UseGuards(JwtAuthGuard)
+  // PROTECTED: Only Students can create posts
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('student')
   @Post()
   createPost(@Body() dto: CreateTuitionDto, @Req() req: RequestWithUser) {
     return this.tuitionService.createPost(dto, req.user.id);
   }
 
-  // Route 3 (PATCH): Protected endpoint for partial updates to a tuition post
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  updatePost(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateData: Partial<CreateTuitionDto>,
-    @Req() req: RequestWithUser,
-  ) {
-    return this.tuitionService.updatePost(id, updateData, req.user.id);
-  }
-
-  // Route 4 (DELETE): Protected endpoint to remove a tuition post
-  @UseGuards(JwtAuthGuard)
+  // PROTECTED: Only Students can delete their posts
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('student')
   @Delete(':id')
   deletePost(
     @Param('id', ParseUUIDPipe) id: string,
@@ -59,8 +51,9 @@ export class TuitionController {
     return this.tuitionService.deletePost(id, req.user.id);
   }
 
-  // Route 5 (POST): Protected endpoint for tutors to apply for a post (Relational CRUD)
-  @UseGuards(JwtAuthGuard)
+  // PROTECTED: Only Tutors can apply
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('tutor')
   @Post(':id/apply')
   apply(
     @Param('id', ParseUUIDPipe) tuitionId: string,
@@ -69,9 +62,10 @@ export class TuitionController {
     return this.tuitionService.applyForTuition(tuitionId, req.user.id);
   }
 
-  // Route 6 (PUT): Protected endpoint for students to manage application status (Relational CRUD + Mailer)
-  @UseGuards(JwtAuthGuard)
-  @Put('applications/:appId/status')
+  // PROTECTED: Only Students can accept/reject applications
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('student')
+  @Patch('applications/:appId/status')
   updateStatus(
     @Param('appId', ParseUUIDPipe) appId: string,
     @Body('status') status: string,
