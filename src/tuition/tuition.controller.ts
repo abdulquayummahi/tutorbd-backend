@@ -77,4 +77,16 @@ export class TuitionController {
       req.user.id,
     );
   }
+
+  // Add this below your existing POST route
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('student')
+  @Put(':id')
+  replacePost(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateTuitionDto,
+    @Req() req: RequestWithUser,
+  ) {
+    return this.tuitionService.replacePost(id, dto, req.user.id);
+  }
 }

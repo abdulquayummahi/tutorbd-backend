@@ -13,7 +13,7 @@ export class RegisterStudentDto {
   @IsEmail() email: string;
   @IsString() @MinLength(6) password: string;
 
-  // THE FIX: Prevents 400 Bad Request if the frontend Zod schema sends this
+  // THE FIX: Prevents NestJS from blocking the Next.js Zod payload
   @IsOptional() @IsString() confirmPassword?: string;
 
   @IsString() @IsNotEmpty() phone: string;
@@ -26,7 +26,6 @@ export class RegisterTutorDto {
   @IsEmail() email: string;
   @IsString() @MinLength(6) password: string;
 
-  // THE FIX: Whitelisted for the tutor registration as well
   @IsOptional() @IsString() confirmPassword?: string;
 
   @IsString() @IsNotEmpty() phone: string;

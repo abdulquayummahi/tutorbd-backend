@@ -98,4 +98,17 @@ export class TuitionService {
 
     return updated;
   }
+
+  // Add this corresponding service method
+  async replacePost(id: string, dto: CreateTuitionDto, studentId: string) {
+    const existing = await this.tuitionRepo.findOne({
+      where: { id, student: { id: studentId } },
+    });
+    if (!existing)
+      throw new NotFoundException('Post not found or unauthorized');
+
+    // PUT replaces the entire entity data
+    const updatedTuition = this.tuitionRepo.merge(existing, dto);
+    return await this.tuitionRepo.save(updatedTuition);
+  }
 }

@@ -28,7 +28,7 @@ export class StudentService {
   async getMyPosts(studentId: string) {
     return await this.tuitionRepo.find({
       where: { student: { id: studentId } },
-      // THE FIX: Deep Relational JOIN. Traverses from Tuition -> Applications -> Tutor Base -> Tutor Profile
+      // THE FIX: Deep Relational JOIN. Traverses Tuition -> Applications -> Tutor -> Profile
       relations: {
         applications: {
           tutor: {
