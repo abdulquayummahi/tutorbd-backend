@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,10 +16,10 @@ export class TuitionService {
   constructor(
     @InjectRepository(Tuition) private tuitionRepo: Repository<Tuition>,
     @InjectRepository(Application) private appRepo: Repository<Application>,
-    private mailerService: MailerService,
+    private mailerService: MailerService, // Injected mailer service for bonus requirement
   ) {}
 
-  // 1. Relational Create: New Tuition tied to a Student
+  // 1. Relational Create: Creates a tuition post tied to a logged-in student user
   async createPost(dto: CreateTuitionDto, studentId: string) {
     const tuition = this.tuitionRepo.create({
       ...dto,
@@ -29,16 +28,14 @@ export class TuitionService {
     return await this.tuitionRepo.save(tuition);
   }
 
-  // src/tuition/tuition.service.ts (Update these two methods)
-
-  // Fix for Line 34
+  // 2. Read: Fetches all tuitions with related student profile details using object relations
   async findAll() {
     return await this.tuitionRepo.find({
-      relations: { student: true }, // Replaced array with object
+      relations: { student: true },
     });
   }
 
-  // 3. Update (Partial): Update tuition details
+  // 3. Update (Partial): PATCH method to update tuition properties securely
   async updatePost(
     id: string,
     dto: Partial<CreateTuitionDto>,
@@ -54,19 +51,19 @@ export class TuitionService {
     return await this.tuitionRepo.save(tuition);
   }
 
-  // 4. Delete: Remove a tuition post
+  // 4. Delete: Removes a tuition post if owned by the requesting student
   async deletePost(id: string, studentId: string) {
     const result = await this.tuitionRepo.delete({
       id,
       student: { id: studentId },
     });
-    if (result.affected === 0) throw new NotFoundException('Post not found');
+    if (result.affected === 0)
+      throw new NotFoundException('Post not found or unauthorized');
     return { message: 'Tuition deleted successfully' };
   }
 
-  // 5. Relational Create: Tutor applies to a post
+  // 5. Relational Create: Allows a tutor to apply for a specific tuition post
   async applyForTuition(tuitionId: string, tutorId: string) {
-    // Check if post exists
     const tuition = await this.tuitionRepo.findOne({
       where: { id: tuitionId },
     });
@@ -79,7 +76,7 @@ export class TuitionService {
     return await this.appRepo.save(application);
   }
 
-  // Fix for Line 86
+  // 6. Relational Update & Bonus Mailer: Student updates application status and triggers email
   async updateApplicationStatus(
     appId: string,
     status: string,
@@ -88,13 +85,13 @@ export class TuitionService {
     const application = await this.appRepo.findOne({
       where: { id: appId },
       relations: {
-        tuition: { student: true }, // Nested relation
+        tuition: { student: true },
         tutor: true,
       },
     });
+
     if (!application) throw new NotFoundException('Application not found');
 
-    // Security check: Only the student who made the post can accept the tutor
     if (application.tuition.student.id !== studentId) {
       throw new UnauthorizedException('You do not own this post');
     }
@@ -102,13 +99,17 @@ export class TuitionService {
     application.status = status;
     const updated = await this.appRepo.save(application);
 
-    // BONUS FEATURE: Send email to tutor if accepted
+    // BONUS FEATURE: Automatically send an email notification to the tutor if accepted
     if (status === 'accepted') {
-      await this.mailerService.sendMail({
-        to: application.tutor.email,
-        subject: 'TutorBD: Application Accepted!',
-        text: `Congratulations! You have been selected for: ${application.tuition.title}`,
-      });
+      try {
+        await this.mailerService.sendMail({
+          to: application.tutor.email,
+          subject: 'TutorBD: Application Accepted!',
+          text: `Congratulations! Your application for the tuition "${application.tuition.title}" has been accepted.`,
+        });
+      } catch (error) {
+        console.error('Mailer error:', error);
+      }
     }
 
     return updated;

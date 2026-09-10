@@ -6,18 +6,21 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS so your Next.js frontend running on port 3000 can communicate with the backend
-  app.enableCors();
+  // 1. ENABLE CORS: Allows Next.js (Frontend) to communicate with NestJS (Backend)
+  app.enableCors({
+    origin: 'http://localhost:7000', // Your Next.js frontend URL
+    credentials: true,
+  });
 
-  // Rubric Requirement 4: Global Validation Pipe
-  // This automatically intercepts incoming requests and validates them against our DTOs.
+  // 2. Global Validation Pipe (Rubric Req 4)
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strips away any properties not defined in the DTO
-      forbidNonWhitelisted: true, // Throws an error if unexpected data is sent
+      whitelist: true,
+      forbidNonWhitelisted: true,
     }),
   );
 
+  // Starts the backend server on port 3001
   await app.listen(3001);
 }
 bootstrap();

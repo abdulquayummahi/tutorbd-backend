@@ -1,7 +1,16 @@
 // src/entities/user.entity.ts
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Tuition } from './tuition.entity';
 import { Application } from './application.entity';
+import { StudentProfile } from './student-profile.entity';
+import { TutorProfile } from './tutor-profile.entity';
+import { AdminProfile } from './admin-profile.entity'; // Import the new profile
 
 @Entity('users')
 export class User {
@@ -11,19 +20,46 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  // Rubric Requirement 8: Passwords must be hashed
   @Column()
   passwordHash: string;
 
-  // Mirrors the layout separation in your frontend (student, tutor, admin, moderator)
   @Column({ type: 'varchar', default: 'student' })
   role: string;
 
-  // One Student can post Many Tuitions
+  // THE FIX: Added status to support Suspend/Restore functionality
+  @Column({ type: 'varchar', default: 'Active' })
+  status: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ nullable: true })
+  address: string;
+
+  // --- ONE-TO-ONE PROFILES ---
+  @OneToOne(() => StudentProfile, (profile) => profile.user, {
+    cascade: true,
+    eager: true,
+  })
+  studentProfile: StudentProfile;
+
+  @OneToOne(() => TutorProfile, (profile) => profile.user, {
+    cascade: true,
+    eager: true,
+  })
+  tutorProfile: TutorProfile;
+
+  // THE FIX: Added Admin Profile
+  @OneToOne(() => AdminProfile, (profile) => profile.user, {
+    cascade: true,
+    eager: true,
+  })
+  adminProfile: AdminProfile;
+
+  // --- ONE-TO-MANY ---
   @OneToMany(() => Tuition, (tuition) => tuition.student)
   tuitions: Tuition[];
 
-  // One Tutor can have Many Applications
   @OneToMany(() => Application, (application) => application.tutor)
   applications: Application[];
 }

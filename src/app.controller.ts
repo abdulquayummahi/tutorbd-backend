@@ -1,12 +1,15 @@
+// src/app.controller.ts
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
 
-@Controller()
+@Controller('api')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  // Route: GET http://localhost:3001/api/health
+  @Get('health')
+  checkConnection() {
+    return {
+      status: 'success',
+      message: 'TutorBD Backend is fully connected and running!',
+      timestamp: new Date().toISOString(),
+    };
   }
 }

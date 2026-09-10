@@ -1,22 +1,28 @@
 // src/auth/dto/auth.dto.ts
-import { IsEmail, IsString, MinLength, IsEnum } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsNotEmpty } from 'class-validator';
 
-export class RegisterDto {
-  @IsEmail({}, { message: 'Please provide a valid email' })
-  email: string;
+export class RegisterTutorDto {
+  @IsString() @IsNotEmpty() fullName: string;
+  @IsEmail({}, { message: 'Invalid email format' }) email: string;
+  @IsString() @IsNotEmpty() phone: string;
+  @IsString() @IsNotEmpty() highestEducation: string;
+  @IsString() @IsNotEmpty() preferredSubjects: string;
+  @IsString() @IsNotEmpty() address: string;
+  @IsString() @MinLength(6) password: string;
+}
 
-  @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters' })
-  password: string;
-
-  @IsEnum(['student', 'tutor', 'admin', 'moderator'])
-  role: string;
+// THE FIX: Updated to match the frontend Student form perfectly!
+export class RegisterStudentDto {
+  @IsString() @IsNotEmpty() firstName: string;
+  @IsString() @IsNotEmpty() lastName: string;
+  @IsEmail() email: string;
+  @IsString() @IsNotEmpty() phone: string;
+  @IsString() @IsNotEmpty() address: string;
+  @IsString() @IsNotEmpty() gradeLevel: string; // Matches frontend dropdown
+  @IsString() @MinLength(6) password: string;
 }
 
 export class LoginDto {
-  @IsEmail()
-  email: string;
-
-  @IsString()
-  password: string;
+  @IsEmail() email: string;
+  @IsString() password: string;
 }
