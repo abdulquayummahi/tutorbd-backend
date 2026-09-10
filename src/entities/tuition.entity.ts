@@ -18,7 +18,6 @@ export class Tuition {
   @Column()
   title: string;
 
-  // THE FIX: Updated columns to perfectly match the Next.js UI payload
   @Column()
   gradeLevel: string;
 
@@ -31,12 +30,12 @@ export class Tuition {
   @Column()
   location: string;
 
-  @Column('decimal')
+  // THE FIX: Changed from 'decimal' to 'int' to force a strict JavaScript Number return type
+  @Column({ type: 'int' })
   salary: number;
 
-  // Inside your Tuition entity class:
   @Column({ type: 'varchar', default: 'pending' })
-  status: string; // 'pending', 'approved', 'rejected'
+  status: string;
 
   @CreateDateColumn()
   createdAt: Date;
